@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "msgpack-rpc-over-http", "~> 0.0.4"
   spec.add_runtime_dependency "thor"
+  spec.add_runtime_dependency "ltsv"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
