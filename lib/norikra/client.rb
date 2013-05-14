@@ -19,14 +19,16 @@ module Norikra
     end
 
     def add_query(table_name, query_name, query_expression)
-      @client.call(:add_query, query)
+      @client.call(:add_query, table_name, query_name, query_expression)
     end
 
-    # def typedefs; end
+    def typedefs
+      @client.call(:typedefs)
+    end
     # def add_typedefs; end
 
     def send(tablename, events)
-      @client.call(:sendevents, tablename, events)
+      @client.call(:send, tablename, events)
     end
 
     # [ [time, event], ... ]
