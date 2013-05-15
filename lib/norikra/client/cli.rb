@@ -51,9 +51,9 @@ class Norikra::Client
       puts "#{queries.size} queries found." unless options[:simple]
     end
 
-    desc "add TABLE_NAME QUERY_NAME QUERY_EXPRESSION", "register a query"
-    def add(table_name, query_name, expression)
-      client(parent_options).add_query(table_name, query_name, expression)
+    desc "add QUERY_NAME QUERY_EXPRESSION", "register a query"
+    def add(query_name, expression)
+      client(parent_options).add_query(query_name, expression)
     end
   end
 

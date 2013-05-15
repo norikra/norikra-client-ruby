@@ -18,8 +18,8 @@ module Norikra
       @client.call(:queries)
     end
 
-    def add_query(table_name, query_name, query_expression)
-      @client.call(:add_query, table_name, query_name, query_expression)
+    def add_query(query_name, query_expression)
+      @client.call(:add_query, query_name, query_expression)
     end
 
     def typedefs
