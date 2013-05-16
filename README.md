@@ -1,29 +1,60 @@
-# Norikra::Client
+# Norikra::Client (norikra-client)
 
-TODO: Write a gem description
+This is the client library implementation for Norikra, and its handy CLI commands.
 
-## Installation
+`Norikra` is CEP server, based on Esper. You can install `gem install norikra` on your JRuby.
+For more information, see https://github.com/tagomoris/norikra .
 
-Add this line to your application's Gemfile:
+Command `norikra-client` and module `Norikra::Client` are provided for both of CRuby and JRuby.
 
-    gem 'norikra-client'
+ * For CRuby: `gem install norikra-client`
+ * For JRuby: `gem install norikra-client-jruby`
 
-And then execute:
+Both have a same API and same data representaions. You can use which you want.
 
-    $ bundle
+## Commands
 
-Or install it yourself as:
+Command `norikra-client` have some subcommands.
 
-    $ gem install norikra-client
+    norikra-client -h
+    Commands:
+      norikra-client event CMD ...ARGS    # send/fetch events
+      norikra-client help [COMMAND]       # Describe available commands or one specific command
+      norikra-client query CMD ...ARGS    # manage queries
+      norikra-client table CMD ...ARGS    # manage tables
+      norikra-client typedef CMD ...ARGS  # manage table field/datatype definitions
+    
+    Options:
+      [--host=HOST]
+                     # Default: localhost
+      [--port=N]
+                     # Default: 26571
 
-## Usage
+Of course, you can see helps of each subcommands by `norikra-client SUBCMD help`
 
-TODO: Write usage instructions here
+## Client Library
 
-## Contributing
+In your programs, you can operate Norikra with Norikra::Client instances.
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+    require 'norikra-client'
+    
+    client = Norikra::Client.new     # connect to localhost:26571
+    # client = Norikra::Client.new(hostname, portnum)
+
+### Instance methods
+
+TBD
+
+## Versions
+
+TBD
+
+## TODO
+
+* TBD
+
+## Copyright
+
+* Copyright (c) 2013- TAGOMORI Satoshi (tagomoris)
+* License
+  * MIT License
