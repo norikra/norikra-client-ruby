@@ -21,7 +21,7 @@ Command `norikra-client` have some subcommands.
       norikra-client event CMD ...ARGS    # send/fetch events
       norikra-client help [COMMAND]       # Describe available commands or one specific command
       norikra-client query CMD ...ARGS    # manage queries
-      norikra-client table CMD ...ARGS    # manage tables
+      norikra-client target CMD ...ARGS   # manage targets
       norikra-client typedef CMD ...ARGS  # manage table field/datatype definitions
     
     Options:

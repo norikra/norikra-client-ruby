@@ -10,8 +10,8 @@ module Norikra
       @client = MessagePack::RPCOverHTTP::Client.new("http://#{host}:#{port}/")
     end
 
-    def tables
-      @client.call(:tables)
+    def targets
+      @client.call(:targets)
     end
 
     def queries
@@ -27,8 +27,8 @@ module Norikra
     end
     # def add_typedefs; end
 
-    def send(tablename, events)
-      @client.call(:send, tablename, events)
+    def send(target, events)
+      @client.call(:send, target, events)
     end
 
     # [ [time, event], ... ]

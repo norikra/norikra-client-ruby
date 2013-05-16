@@ -11,18 +11,18 @@ class Norikra::Client
     end
   end
 
-  class Table < Thor
+  class Target < Thor
     include Norikra::Client::CLIUtil
 
-    desc "list", "show list of tables"
+    desc "list", "show list of targets"
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list
-      puts "TABLENAME" unless options[:simple]
-      tables = client(parent_options).tables
-      tables.each do |t|
+      puts "TARGET" unless options[:simple]
+      targets = client(parent_options).targets
+      targets.each do |t|
         puts t
       end
-      puts "#{tables.size} tables found." unless options[:simple]
+      puts "#{targets.size} targets found." unless options[:simple]
     end
   end
 
@@ -43,10 +43,10 @@ class Norikra::Client
     desc "list", "show list of queries"
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list
-      puts "TABLES\tQUERY_NAME\tQUERY" unless options[:simple]
+      puts "TARGET\tQUERY_NAME\tQUERY" unless options[:simple]
       queries = client(parent_options).queries
-      queries.sort{|a,b| (a['tablename'] <=> b['tablename']).nonzero? || a['name'] <=> b['name']}.each do |q|
-        puts "#{q['tablename']}\t#{q['name']}\t#{q['expression']}"
+      queries.sort{|a,b| (a['target'] <=> b['target']).nonzero? || a['name'] <=> b['name']}.each do |q|
+        puts "#{q['target']}\t#{q['name']}\t#{q['expression']}"
       end
       puts "#{queries.size} queries found." unless options[:simple]
     end
@@ -60,21 +60,21 @@ class Norikra::Client
   class Event < Thor
     include Norikra::Client::CLIUtil
 
-    desc "send TABLE_NAME", "send data into table"
+    desc "send TARGET", "send data into targets"
     option :format, :type => :string, :default => 'json', :desc => "format of input data per line of stdin [json(default), ltsv]"
     option :batch_size, :type => :numeric, :default => 10000, :desc => "records sent in once transferring (default: 10000)"
-    def send(tablename)
+    def send(target)
       client = client(parent_options)
       parser = parser(options[:format])
       buffer = []
       $stdin.each_line do |line|
         buffer.push(parser.parse(line))
         if buffer.size >= options[:batch_size]
-          client.send(tablename, buffer)
+          client.send(target, buffer)
           buffer = []
         end
       end
-      client.send(tablename, buffer) if buffer.size > 0
+      client.send(target, buffer) if buffer.size > 0
     end
 
     desc "fetch QUERY_NAME", "fetch events from specified query"
@@ -121,10 +121,10 @@ class Norikra::Client
     class_option :host, :type => :string, :default => 'localhost'
     class_option :port, :type => :numeric, :default => 26571
 
-    desc "table CMD ...ARGS", "manage tables"
-    subcommand "table", Table
+    desc "target CMD ...ARGS", "manage targets"
+    subcommand "target", Target
 
-    desc "typedef CMD ...ARGS", "manage table field/datatype definitions"
+    desc "typedef CMD ...ARGS", "manage target field/datatype definitions"
     subcommand "typedef", Typedef
 
     desc "query CMD ...ARGS", "manage queries"
