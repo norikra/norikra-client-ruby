@@ -76,7 +76,7 @@ class Norikra::Client
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list(target)
       puts "FIELD\tTYPE\tOPTIONAL" unless options[:simple]
-      fields = client(parent_options).fields
+      fields = client(parent_options).fields(target)
       fields.each do |f|
         puts "#{f['name']}\t#{f['type']}\t#{f['optional']}"
       end
