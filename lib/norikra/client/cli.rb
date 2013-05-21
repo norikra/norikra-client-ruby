@@ -24,16 +24,23 @@ class Norikra::Client
       end
       puts "#{targets.size} targets found." unless options[:simple]
     end
-  end
 
-  class Typedef < Thor
-    include Norikra::Client::CLIUtil
+    desc "open TARGET [fieldname1:type1 [fieldname2:type2 [fieldname3:type3] ...]]", "create new target (and define its fields)"
+    def open(target, *field_defs)
+      fields = nil
+      if field_defs.size > 0
+        fields = {}
+        field_defs.each do |str|
+          fname,ftype = str.split(':')
+          fields[fname] = ftype
+        end
+      end
+      client(parent_options).open(target, fields)
+    end
 
-    desc "list", "show list of field definitions"
-    def list
-      defs = client(parent_options).typedefs
-      require 'pp'
-      pp defs
+    desc "close TARGET", "close existing target and all its queries"
+    def close(target)
+      client(parent_options).close(target)
     end
   end
 
@@ -53,7 +60,32 @@ class Norikra::Client
 
     desc "add QUERY_NAME QUERY_EXPRESSION", "register a query"
     def add(query_name, expression)
-      client(parent_options).add_query(query_name, expression)
+      client(parent_options).register(query_name, expression)
+    end
+
+    desc "remove QUERY_NAME", "deregister a query"
+    def remove(query_name)
+      client(parent_options).deregister(query_name)
+    end
+  end
+
+  class Field < Thor
+    include Norikra::Client::CLIUtil
+
+    desc "list TARGET", "show list of field definitions of specified target"
+    option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
+    def list(target)
+      puts "FIELD\tTYPE\tOPTIONAL" unless options[:simple]
+      fields = client(parent_options).fields
+      fields.each do |f|
+        puts "#{f['name']}\t#{f['type']}\t#{f['optional']}"
+      end
+      puts "#{fields.size} fields found." unless options[:simple]
+    end
+
+    desc "add TARGET FIELDNAME TYPE", "reserve fieldname and its type of target"
+    def add(target, field, type)
+      client(parent_options).reserve(target, field, type)
     end
   end
 
@@ -124,16 +156,13 @@ class Norikra::Client
     desc "target CMD ...ARGS", "manage targets"
     subcommand "target", Target
 
-    desc "typedef CMD ...ARGS", "manage target field/datatype definitions"
-    subcommand "typedef", Typedef
+    desc "field CMD ...ARGS", "manage target field/datatype definitions"
+    subcommand "field", Field
 
     desc "query CMD ...ARGS", "manage queries"
     subcommand "query", Query
 
     desc "event CMD ...ARGS", "send/fetch events"
     subcommand "event", Event
-
-    # def typedefs; end
-    # def add_typedefs; end
   end
 end

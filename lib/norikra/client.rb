@@ -14,18 +14,33 @@ module Norikra
       @client.call(:targets)
     end
 
+    def open(target, fields=nil)
+      @client.call(:open, target, fields)
+    end
+
+    def close(target)
+      @client.call(:close, target)
+    end
+
     def queries
       @client.call(:queries)
     end
 
-    def add_query(query_name, query_expression)
-      @client.call(:add_query, query_name, query_expression)
+    def register(query_name, query_expression)
+      @client.call(:register, query_name, query_expression)
     end
 
-    def typedefs
-      @client.call(:typedefs)
+    def deregister(query_name)
+      @client.call(:deregister, query_name)
     end
-    # def add_typedefs; end
+
+    def fields(target)
+      @client.call(:fields, target)
+    end
+
+    def reserve(target, field, type)
+      @client.call(:reserve, target, field, type)
+    end
 
     def send(target, events)
       @client.call(:send, target, events)
