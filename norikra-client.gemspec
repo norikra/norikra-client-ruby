@@ -6,6 +6,7 @@ require 'norikra/client/version'
 Gem::Specification.new do |spec|
   spec.name          = "norikra-client"
   spec.version       = Norikra::Client::VERSION
+  # spec.platform      = "java"
   spec.authors       = ["TAGOMORI Satoshi"]
   spec.email         = ["tagomoris@gmail.com"]
   spec.description   = %q{Client commands and libraries for Norikra}
@@ -18,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "msgpack-rpc-over-http", "~> 0.0.4"
+  spec.add_runtime_dependency "msgpack-rpc-over-http", ">= 0.0.4"
   spec.add_runtime_dependency "thor"
   spec.add_runtime_dependency "ltsv"
 
