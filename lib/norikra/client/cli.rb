@@ -50,10 +50,10 @@ class Norikra::Client
     desc "list", "show list of queries"
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list
-      puts "TARGET\tQUERY_NAME\tQUERY" unless options[:simple]
+      puts "QUERY_NAME\tTARGETS\tQUERY" unless options[:simple]
       queries = client(parent_options).queries
-      queries.sort{|a,b| (a['target'] <=> b['target']).nonzero? || a['name'] <=> b['name']}.each do |q|
-        puts "#{q['target']}\t#{q['name']}\t#{q['expression']}"
+      queries.sort{|a,b| (a['target'].first <=> b['target'].first).nonzero? || a['name'] <=> b['name']}.each do |q|
+        puts "#{q['name']}\t#{q['targets'].join(',')}\t#{q['expression']}"
       end
       puts "#{queries.size} queries found." unless options[:simple]
     end
