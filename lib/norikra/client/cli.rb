@@ -52,7 +52,7 @@ class Norikra::Client
     def list
       puts "QUERY_NAME\tTARGETS\tQUERY" unless options[:simple]
       queries = client(parent_options).queries
-      queries.sort{|a,b| (a['target'].first <=> b['target'].first).nonzero? || a['name'] <=> b['name']}.each do |q|
+      queries.sort{|a,b| (a['targets'].first <=> b['targets'].first).nonzero? || a['name'] <=> b['name']}.each do |q|
         puts "#{q['name']}\t#{q['targets'].join(',')}\t#{q['expression']}"
       end
       puts "#{queries.size} queries found." unless options[:simple]
