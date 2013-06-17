@@ -1,6 +1,6 @@
 require "norikra/client/version"
 
-require 'msgpack-rpc-over-http'
+require 'msgpack-rpc-over-http-jruby'
 
 module Norikra
   class Client
