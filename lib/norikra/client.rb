@@ -3,6 +3,11 @@ require "norikra/client/version"
 require 'msgpack-rpc-over-http-jruby'
 
 module Norikra
+  module RPC
+    class ClientError < MessagePack::RPCOverHTTP::RemoteError; end
+    class ServerError < MessagePack::RPCOverHTTP::RemoteError; end
+  end
+
   class Client
     RPC_DEFAULT_PORT = 26571
     TIMEOUT_OPTIONS = [:connect_timeout, :send_timeout, :receive_timeout]
