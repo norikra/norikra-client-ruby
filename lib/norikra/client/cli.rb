@@ -9,6 +9,16 @@ class Norikra::Client
     def client(options)
       Norikra::Client.new(options[:host], options[:port])
     end
+    def wrap
+      begin
+        yield
+      rescue Norikra::RPC::ClientError => e
+        puts "Failed: " + e.message
+      rescue Norikra::RPC::ServerError => e
+        puts "ERROR on norikra server: " + e.message
+        puts " For more details, see norikra server's logs"
+      end
+    end
   end
 
   class Target < Thor
@@ -17,30 +27,36 @@ class Norikra::Client
     desc "list", "show list of targets"
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list
-      puts "TARGET" unless options[:simple]
-      targets = client(parent_options).targets
-      targets.each do |t|
-        puts t
+      wrap do
+        puts "TARGET" unless options[:simple]
+        targets = client(parent_options).targets
+        targets.each do |t|
+          puts t
+        end
+        puts "#{targets.size} targets found." unless options[:simple]
       end
-      puts "#{targets.size} targets found." unless options[:simple]
     end
 
     desc "open TARGET [fieldname1:type1 [fieldname2:type2 [fieldname3:type3] ...]]", "create new target (and define its fields)"
     def open(target, *field_defs)
-      fields = nil
-      if field_defs.size > 0
-        fields = {}
-        field_defs.each do |str|
-          fname,ftype = str.split(':')
-          fields[fname] = ftype
+      wrap do
+        fields = nil
+        if field_defs.size > 0
+          fields = {}
+          field_defs.each do |str|
+            fname,ftype = str.split(':')
+            fields[fname] = ftype
+          end
         end
+        client(parent_options).open(target, fields)
       end
-      client(parent_options).open(target, fields)
     end
 
     desc "close TARGET", "close existing target and all its queries"
     def close(target)
-      client(parent_options).close(target)
+      wrap do
+        client(parent_options).close(target)
+      end
     end
   end
 
@@ -50,22 +66,28 @@ class Norikra::Client
     desc "list", "show list of queries"
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list
-      puts "QUERY_NAME\tTARGETS\tQUERY" unless options[:simple]
-      queries = client(parent_options).queries
-      queries.sort{|a,b| (a['targets'].first <=> b['targets'].first).nonzero? || a['name'] <=> b['name']}.each do |q|
-        puts "#{q['name']}\t#{q['targets'].join(',')}\t#{q['expression']}"
+      wrap do
+        puts "QUERY_NAME\tTARGETS\tQUERY" unless options[:simple]
+        queries = client(parent_options).queries
+        queries.sort{|a,b| (a['targets'].first <=> b['targets'].first).nonzero? || a['name'] <=> b['name']}.each do |q|
+          puts "#{q['name']}\t#{q['targets'].join(',')}\t#{q['expression']}"
+        end
+        puts "#{queries.size} queries found." unless options[:simple]
       end
-      puts "#{queries.size} queries found." unless options[:simple]
     end
 
     desc "add QUERY_NAME QUERY_EXPRESSION", "register a query"
     def add(query_name, expression)
-      client(parent_options).register(query_name, expression)
+      wrap do
+        client(parent_options).register(query_name, expression)
+      end
     end
 
     desc "remove QUERY_NAME", "deregister a query"
     def remove(query_name)
-      client(parent_options).deregister(query_name)
+      wrap do
+        client(parent_options).deregister(query_name)
+      end
     end
   end
 
@@ -75,17 +97,21 @@ class Norikra::Client
     desc "list TARGET", "show list of field definitions of specified target"
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list(target)
-      puts "FIELD\tTYPE\tOPTIONAL" unless options[:simple]
-      fields = client(parent_options).fields(target)
-      fields.each do |f|
-        puts "#{f['name']}\t#{f['type']}\t#{f['optional']}"
+      wrap do
+        puts "FIELD\tTYPE\tOPTIONAL" unless options[:simple]
+        fields = client(parent_options).fields(target)
+        fields.each do |f|
+          puts "#{f['name']}\t#{f['type']}\t#{f['optional']}"
+        end
+        puts "#{fields.size} fields found." unless options[:simple]
       end
-      puts "#{fields.size} fields found." unless options[:simple]
     end
 
     desc "add TARGET FIELDNAME TYPE", "reserve fieldname and its type of target"
     def add(target, field, type)
-      client(parent_options).reserve(target, field, type)
+      wrap do
+        client(parent_options).reserve(target, field, type)
+      end
     end
   end
 
@@ -96,17 +122,19 @@ class Norikra::Client
     option :format, :type => :string, :default => 'json', :desc => "format of input data per line of stdin [json(default), ltsv]"
     option :batch_size, :type => :numeric, :default => 10000, :desc => "records sent in once transferring (default: 10000)"
     def send(target)
-      client = client(parent_options)
-      parser = parser(options[:format])
-      buffer = []
-      $stdin.each_line do |line|
-        buffer.push(parser.parse(line))
-        if buffer.size >= options[:batch_size]
-          client.send(target, buffer)
-          buffer = []
+      wrap do
+        client = client(parent_options)
+        parser = parser(options[:format])
+        buffer = []
+        $stdin.each_line do |line|
+          buffer.push(parser.parse(line))
+          if buffer.size >= options[:batch_size]
+            client.send(target, buffer)
+            buffer = []
+          end
         end
+        client.send(target, buffer) if buffer.size > 0
       end
-      client.send(target, buffer) if buffer.size > 0
     end
 
     desc "fetch QUERY_NAME", "fetch events from specified query"
@@ -114,12 +142,14 @@ class Norikra::Client
     option :time_key, :type => :string, :default => 'time', :desc => "output key name for event time (default: time)"
     option :time_format, :type => :string, :default => '%Y/%m/%d %H:%M:%S', :desc => "output time format (default: '2013/05/14 17:57:59')"
     def fetch(query_name)
-      formatter = formatter(options[:format])
-      time_formatter = lambda{|t| Time.at(t).strftime(options[:time_format])}
+      wrap do
+        formatter = formatter(options[:format])
+        time_formatter = lambda{|t| Time.at(t).strftime(options[:time_format])}
 
-      client(parent_options).event(query_name).each do |time,event|
-        event = {options[:time_key] => Time.at(time).strftime(options[:time_format])}.merge(event)
-        puts formatter.format(event)
+        client(parent_options).event(query_name).each do |time,event|
+          event = {options[:time_key] => Time.at(time).strftime(options[:time_format])}.merge(event)
+          puts formatter.format(event)
+        end
       end
     end
 
@@ -129,19 +159,21 @@ class Norikra::Client
     option :time_key, :type => :string, :default => 'time', :desc => "output key name for event time (default: time)"
     option :time_format, :type => :string, :default => '%Y/%m/%d %H:%M:%S', :desc => "output time format (default: '2013/05/14 17:57:59')"
     def sweep
-      formatter = formatter(options[:format])
-      time_formatter = lambda{|t| Time.at(t).strftime(options[:time_format])}
+      wrap do
+        formatter = formatter(options[:format])
+        time_formatter = lambda{|t| Time.at(t).strftime(options[:time_format])}
 
-      data = client(parent_options).sweep
+        data = client(parent_options).sweep
 
-      data.keys.sort.each do |queryname|
-        events = data[queryname]
-        events.each do |time,event|
-          event = {
-            options[:time_key] => Time.at(time).strftime(options[:time_format]),
-            options[:query_name_key] => queryname,
-          }.merge(event)
-          puts formatter.format(event)
+        data.keys.sort.each do |queryname|
+          events = data[queryname]
+          events.each do |time,event|
+            event = {
+              options[:time_key] => Time.at(time).strftime(options[:time_format]),
+              options[:query_name_key] => queryname,
+            }.merge(event)
+            puts formatter.format(event)
+          end
         end
       end
     end
