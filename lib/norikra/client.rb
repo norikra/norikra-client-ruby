@@ -36,8 +36,8 @@ module Norikra
       @client.call(:queries)
     end
 
-    def register(query_name, query_expression)
-      @client.call(:register, query_name, query_expression)
+    def register(query_name, query_group, query_expression)
+      @client.call(:register, query_name, query_group, query_expression)
     end
 
     def deregister(query_name)
@@ -62,8 +62,8 @@ module Norikra
     end
 
     # {'query_name' => [ [time, event], ... ]}
-    def sweep
-      @client.call(:sweep)
+    def sweep(query_group=nil)
+      @client.call(:sweep, query_group)
     end
   end
 end

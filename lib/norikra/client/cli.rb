@@ -67,19 +67,25 @@ class Norikra::Client
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list
       wrap do
-        puts "QUERY_NAME\tTARGETS\tQUERY" unless options[:simple]
+        puts ["QUERY_NAME", "GROUP", "TARGETS", "QUERY"].join("\t") unless options[:simple]
         queries = client(parent_options).queries
         queries.sort{|a,b| (a['targets'].first <=> b['targets'].first).nonzero? || a['name'] <=> b['name']}.each do |q|
-          puts "#{q['name']}\t#{q['targets'].join(',')}\t#{q['expression']}"
+          puts [
+            q['name'],
+            (q['group'] || 'default'),
+            q['targets'].join(','),
+            q['expression']
+          ].join("\t")
         end
         puts "#{queries.size} queries found." unless options[:simple]
       end
     end
 
     desc "add QUERY_NAME QUERY_EXPRESSION", "register a query"
+    option :group, :type => :string, :default => nil, :desc => "query group for sweep/listen (default: null)", :aliases => "-g"
     def add(query_name, expression)
       wrap do
-        client(parent_options).register(query_name, expression)
+        client(parent_options).register(query_name, options[:group], expression)
       end
     end
 
@@ -153,17 +159,17 @@ class Norikra::Client
       end
     end
 
-    desc "sweep", "fetch all output events of all queries"
+    desc "sweep [query_group_name]", "fetch all output events of all queries of default (or specified) query group"
     option :format, :type => :string, :default => 'json', :desc => "format of output data per line of stdout [json(default), ltsv]"
     option :query_name_key, :type => :string, :default => 'query', :desc => "output key name for query name (default: query)"
     option :time_key, :type => :string, :default => 'time', :desc => "output key name for event time (default: time)"
     option :time_format, :type => :string, :default => '%Y/%m/%d %H:%M:%S', :desc => "output time format (default: '2013/05/14 17:57:59')"
-    def sweep
+    def sweep(query_group=nil)
       wrap do
         formatter = formatter(options[:format])
         time_formatter = lambda{|t| Time.at(t).strftime(options[:time_format])}
 
-        data = client(parent_options).sweep
+        data = client(parent_options).sweep(query_group)
 
         data.keys.sort.each do |queryname|
           events = data[queryname]
