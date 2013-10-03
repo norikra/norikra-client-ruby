@@ -28,27 +28,30 @@ class Norikra::Client
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list
       wrap do
-        puts "TARGET" unless options[:simple]
+        puts ["TARGET","AUTO_FIELD"].join("\t") unless options[:simple]
         targets = client(parent_options).targets
         targets.each do |t|
-          puts t
+          puts [t[:name], t[:auto_field]].join("\t")
         end
         puts "#{targets.size} targets found." unless options[:simple]
       end
     end
 
     desc "open TARGET [fieldname1:type1 [fieldname2:type2 [fieldname3:type3] ...]]", "create new target (and define its fields)"
+    option :suppress_auto_field, :type => :boolean, :default => false, :desc => "suppress to define fields automatically", :aliases => "-x"
     def open(target, *field_defs)
-      wrap do
-        fields = nil
-        if field_defs.size > 0
-          fields = {}
-          field_defs.each do |str|
-            fname,ftype = str.split(':')
-            fields[fname] = ftype
-          end
+      fields = nil
+      if field_defs.size > 0
+        fields = {}
+        field_defs.each do |str|
+          fname,ftype = str.split(':')
+          fields[fname] = ftype
         end
-        client(parent_options).open(target, fields)
+      end
+      auto_field = (not options[:suppress_auto_field])
+
+      wrap do
+        client(parent_options).open(target, fields, auto_field)
       end
     end
 
@@ -56,6 +59,14 @@ class Norikra::Client
     def close(target)
       wrap do
         client(parent_options).close(target)
+      end
+    end
+
+    desc "modify TARGET BOOL_VALUE", "modify target to do define fields automatically or not"
+    def modify(target, val)
+      auto_field = ['yes','true','auto'].include?(val.downcase)
+      wrap do
+        client(parent_options).modify(target, auto_field)
       end
     end
   end
@@ -128,17 +139,18 @@ class Norikra::Client
     option :format, :type => :string, :default => 'json', :desc => "format of input data per line of stdin [json(default), ltsv]"
     option :batch_size, :type => :numeric, :default => 10000, :desc => "records sent in once transferring (default: 10000)"
     def send(target)
-      wrap do
-        client = client(parent_options)
-        parser = parser(options[:format])
-        buffer = []
-        $stdin.each_line do |line|
-          buffer.push(parser.parse(line))
-          if buffer.size >= options[:batch_size]
-            client.send(target, buffer)
-            buffer = []
-          end
+      client = client(parent_options)
+      parser = parser(options[:format])
+      buffer = []
+      $stdin.each_line do |line|
+        buffer.push(parser.parse(line))
+        if buffer.size >= options[:batch_size]
+          client.send(target, buffer)
+          buffer = []
         end
+      end
+
+      wrap do
         client.send(target, buffer) if buffer.size > 0
       end
     end
@@ -148,10 +160,10 @@ class Norikra::Client
     option :time_key, :type => :string, :default => 'time', :desc => "output key name for event time (default: time)"
     option :time_format, :type => :string, :default => '%Y/%m/%d %H:%M:%S', :desc => "output time format (default: '2013/05/14 17:57:59')"
     def fetch(query_name)
-      wrap do
-        formatter = formatter(options[:format])
-        time_formatter = lambda{|t| Time.at(t).strftime(options[:time_format])}
+      formatter = formatter(options[:format])
+      time_formatter = lambda{|t| Time.at(t).strftime(options[:time_format])}
 
+      wrap do
         client(parent_options).event(query_name).each do |time,event|
           event = {options[:time_key] => Time.at(time).strftime(options[:time_format])}.merge(event)
           puts formatter.format(event)
