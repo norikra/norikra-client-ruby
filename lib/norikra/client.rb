@@ -21,15 +21,19 @@ module Norikra
     end
 
     def targets
-      @client.call(:targets)
+      @client.call(:targets) #=> {:name => "name", :auto_field => true}
     end
 
-    def open(target, fields=nil)
-      @client.call(:open, target, fields)
+    def open(target, fields=nil, auto_field=true)
+      @client.call(:open, target, fields, auto_field)
     end
 
     def close(target)
       @client.call(:close, target)
+    end
+
+    def modify(target, auto_field)
+      @client.call(:modify, target, auto_field)
     end
 
     def queries
