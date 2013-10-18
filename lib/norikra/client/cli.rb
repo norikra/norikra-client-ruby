@@ -31,7 +31,7 @@ class Norikra::Client
         puts ["TARGET","AUTO_FIELD"].join("\t") unless options[:simple]
         targets = client(parent_options).targets
         targets.each do |t|
-          puts [t[:name], t[:auto_field]].join("\t")
+          puts [t['name'], t['auto_field']].join("\t")
         end
         puts "#{targets.size} targets found." unless options[:simple]
       end
