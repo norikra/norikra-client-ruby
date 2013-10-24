@@ -78,14 +78,14 @@ class Norikra::Client
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list
       wrap do
-        puts ["QUERY_NAME", "GROUP", "TARGETS", "QUERY"].join("\t") unless options[:simple]
+        puts ["NAME", "GROUP", "TARGETS", "QUERY"].join("\t") unless options[:simple]
         queries = client(parent_options).queries
         queries.sort{|a,b| (a['targets'].first <=> b['targets'].first).nonzero? || a['name'] <=> b['name']}.each do |q|
           puts [
             q['name'],
             (q['group'] || 'default'),
             q['targets'].join(','),
-            q['expression']
+            q['expression'].split("\n").map(&:strip).join(" ")
           ].join("\t")
         end
         puts "#{queries.size} queries found." unless options[:simple]
