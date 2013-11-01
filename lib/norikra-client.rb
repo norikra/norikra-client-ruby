@@ -1,0 +1,1 @@
+require 'norikra/client'
