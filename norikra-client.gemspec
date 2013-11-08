@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["tagomoris@gmail.com"]
   spec.description   = %q{Client commands and libraries for Norikra}
   spec.summary       = %q{Client commands and libraries for Norikra}
-  spec.homepage      = "https://github.com/tagomoris/norikra-client"
+  spec.homepage      = "https://github.com/norikra/norikra-client-ruby"
   spec.license       = "APLv2"
 
   spec.files         = `git ls-files`.split($/)
