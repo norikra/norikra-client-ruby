@@ -75,7 +75,7 @@ Without fields, the specified target will be opend as 'lazy' mode, and actually 
 
 With field definitions, `#open()` creates the target and actually opens it immediately.
 
-    client.open('sample', {id:'long', name:'string', age:'int', email:'string'})
+    client.open('sample', {id:'integer', name:'string', age:'integer', email:'string'})
 
 Fiels specified on `#open()` are configured as default field set.
 
@@ -124,7 +124,7 @@ Stop and remove specified query immediately.
 
 Returns the list of fields definitions, which contains `name`(string), `type`(string) and `optional`(true/false).
 
-    client.fields('sample') #=> [{'name' => 'id', 'type' => 'int', 'optional' => false}, ...]
+    client.fields('sample') #=> [{'name' => 'id', 'type' => 'integer', 'optional' => false}, ...]
 
 NOTE: Hashes and arrays are just returned as 'hash' and 'array'. Nested fields and these types are not returned to client.
 
