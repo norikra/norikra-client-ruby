@@ -171,6 +171,22 @@ class Norikra::Client
       end
     end
 
+    desc "see QUERY_NAME", "see events of specified query, but not delete"
+    option :format, :type => :string, :default => 'json', :desc => "format of output data per line of stdout [json(default), ltsv]"
+    option :time_key, :type => :string, :default => 'time', :desc => "output key name for event time (default: time)"
+    option :time_format, :type => :string, :default => '%Y/%m/%d %H:%M:%S', :desc => "output time format (default: '2013/05/14 17:57:59')"
+    def see(query_name)
+      formatter = formatter(options[:format])
+      time_formatter = lambda{|t| Time.at(t).strftime(options[:time_format])}
+
+      wrap do
+        client(parent_options).see(query_name).each do |time,event|
+          event = {options[:time_key] => Time.at(time).strftime(options[:time_format])}.merge(event)
+          puts formatter.format(event)
+        end
+      end
+    end
+
     desc "sweep [query_group_name]", "fetch all output events of all queries of default (or specified) query group"
     option :format, :type => :string, :default => 'json', :desc => "format of output data per line of stdout [json(default), ltsv]"
     option :query_name_key, :type => :string, :default => 'query', :desc => "output key name for query name (default: query)"

@@ -65,6 +65,11 @@ module Norikra
       @client.call(:event, query_name)
     end
 
+    # [ [time, event], ... ]
+    def see(query_name)
+      @client.call(:see, query_name)
+    end
+
     # {'query_name' => [ [time, event], ... ]}
     def sweep(query_group=nil)
       @client.call(:sweep, query_group)
