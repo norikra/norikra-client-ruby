@@ -213,6 +213,44 @@ class Norikra::Client
     end
   end
 
+  class Admin < Thor
+    include Norikra::Client::CLIUtil
+
+    desc "stats", "dump stats json: same with norikra server's --stats option"
+    def stats
+      client = client(parent_options)
+
+      targets = []
+      queries = []
+
+      wrap do
+        queries = client.queries()
+
+        client.targets().each do |t|
+          fields = {}
+          client.fields(t['name']).each do |f|
+            next if f['type'] == 'hash' || f['type'] == 'array'
+            fields[f['name']] = f
+          end
+          targets.push( { "name" => t['name'], "fields" => fields, "auto_field" => t['auto_field'] } )
+        end
+      end
+
+      require 'json'
+
+      puts JSON.pretty_generate({
+          "threads" => {
+            "engine" => { "inbound" => {}, "outbound" => {}, "route_exec" => {}, "timer_exec" => {} },
+            "rpc" => {},
+            "web" => {},
+          },
+          "log" => {},
+          "targets" => targets,
+          "queries" => queries,
+        })
+    end
+  end
+
   class CLI < Thor
     include Norikra::Client::CLIUtil
 
@@ -230,5 +268,8 @@ class Norikra::Client
 
     desc "event CMD ...ARGS", "send/fetch events"
     subcommand "event", Event
+
+    desc "admin CMD ...ARGS", "norikra server administrations"
+    subcommand "admin", Admin
   end
 end
