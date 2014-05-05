@@ -218,6 +218,7 @@ class Norikra::Client
 
     desc "stats", "dump stats json: same with norikra server's --stats option"
     def stats
+      opt = parent_options
       client = client(parent_options)
 
       targets = []
@@ -248,6 +249,17 @@ class Norikra::Client
           "targets" => targets,
           "queries" => queries,
         })
+    end
+
+    desc "logs", "get and print Norikra server logs"
+    def logs
+      opt = parent_options
+      client = client(parent_options)
+      wrap do
+        client.logs().each do |time, level, line|
+          puts "#{time} [#{level}] #{line}"
+        end
+      end
     end
   end
 
