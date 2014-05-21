@@ -74,5 +74,9 @@ module Norikra
     def sweep(query_group=nil)
       @client.call(:sweep, query_group)
     end
+
+    def logs
+      @client.call(:logs)
+    end
   end
 end
