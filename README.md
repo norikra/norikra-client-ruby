@@ -120,6 +120,18 @@ Stop and remove specified query immediately.
 
     client.deregister('q1')   #=> true
 
+### Norikra::Client#suspend(query_name)
+
+Stop but does NOT remove specified query. Suspended queries are not recorded in stats file.
+
+    client.suspend('q1')   #=> true
+
+### Norikra::Client#resume(query_name)
+
+Re-run specified query, which is suspended previously.
+
+    client.resume('q1')    #=> true
+
 ### Norikra::Client#fields(target)
 
 Returns the list of fields definitions, which contains `name`(string), `type`(string) and `optional`(true/false).
