@@ -48,6 +48,14 @@ module Norikra
       @client.call(:deregister, query_name)
     end
 
+    def suspend(query_name)
+      @client.call(:suspend, query_name)
+    end
+
+    def resume(query_name)
+      @client.call(:resume, query_name)
+    end
+
     def fields(target)
       @client.call(:fields, target)
     end

@@ -120,6 +120,18 @@ Stop and remove specified query immediately.
 
     client.deregister('q1')   #=> true
 
+### Norikra::Client#suspend(query_name)
+
+Stop but does NOT remove specified query. Suspended queries are not recorded in stats file.
+
+    client.suspend('q1')   #=> true
+
+### Norikra::Client#resume(query_name)
+
+Re-run specified query, which is suspended previously.
+
+    client.resume('q1')    #=> true
+
 ### Norikra::Client#fields(target)
 
 Returns the list of fields definitions, which contains `name`(string), `type`(string) and `optional`(true/false).
@@ -159,8 +171,8 @@ The second value is output record of query as Hash.
 
 Fetch all output events of queries of specified group. `query_group: nil` means default query group. Returns Hash instance like `'query_name' => [list of output (same as #event)]`
 
-    client.fetch() #=> for default group
-    client.fetch('my_secret_group')
+    client.sweep() #=> for default group
+    client.sweep('my_secret_group')
 
 ## Versions
 
