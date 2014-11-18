@@ -78,13 +78,14 @@ class Norikra::Client
     option :simple, :type => :boolean, :default => false, :desc => "suppress header/footer", :aliases => "-s"
     def list
       wrap do
-        puts ["NAME", "GROUP", "TARGETS", "QUERY"].join("\t") unless options[:simple]
+        puts ["NAME", "GROUP", "TARGETS", "SUSPENDED", "QUERY"].join("\t") unless options[:simple]
         queries = client(parent_options).queries
         queries.sort{|a,b| (a['targets'].first <=> b['targets'].first).nonzero? || a['name'] <=> b['name']}.each do |q|
           puts [
             q['name'],
             (q['group'] || 'default'),
             q['targets'].join(','),
+            q['suspended'].to_s,
             q['expression'].split("\n").map(&:strip).join(" ")
           ].join("\t")
         end
@@ -104,6 +105,20 @@ class Norikra::Client
     def remove(query_name)
       wrap do
         client(parent_options).deregister(query_name)
+      end
+    end
+
+    desc "suspend QUERY_NAME", "specify to stop (but not removed)"
+    def suspend(query_name)
+      wrap do
+        client(parent_options).suspend(query_name)
+      end
+    end
+
+    desc "resume QUERY_NAME", "specify to re-run query suspended before"
+    def resume(query_name)
+      wrap do
+        client(parent_options).resume(query_name)
       end
     end
   end
