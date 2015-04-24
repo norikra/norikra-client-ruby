@@ -6,7 +6,11 @@ require 'norikra/client/version'
 Gem::Specification.new do |spec|
   spec.name          = "norikra-client"
   spec.version       = Norikra::Client::VERSION
-  # spec.platform      = "java"
+
+  if /java/ =~ RUBY_PLATFORM
+    spec.platform      = "java"
+  end
+
   spec.authors       = ["TAGOMORI Satoshi"]
   spec.email         = ["tagomoris@gmail.com"]
   spec.description   = %q{Client commands and libraries for Norikra}
