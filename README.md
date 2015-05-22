@@ -10,7 +10,7 @@ Command `norikra-client` and module `Norikra::Client` are provided for both of C
  * For CRuby: `gem install norikra-client`
  * For JRuby: `gem install norikra-client-jruby`
 
-Both have a same API and same data representaions. You can use which you want.
+Both have a same API and same data representations. You can use which you want.
 
 ## Commands
 
@@ -71,13 +71,13 @@ Create new target on norikra server, to put events and queries. Returns true or 
 
     client.open('sample') #=> true
 
-Without fields, the specified target will be opend as 'lazy' mode, and actually opend when first input event arrived. Default field set will be determined at that time.
+Without fields, the specified target will be opened as 'lazy' mode, and actually opened when first input event arrived. Default field set will be determined at that time.
 
 With field definitions, `#open()` creates the target and actually opens it immediately.
 
     client.open('sample', {id:'integer', name:'string', age:'integer', email:'string'})
 
-Fiels specified on `#open()` are configured as default field set.
+Fields specified on `#open()` are configured as default field set.
 
 `auto_field` means which fields in arrived events are automatically added on field list, or not. Default is true.
 `auto_field: true` helps you to know What fields input event streams have. You can watch fields list on norikra, and write queries. But in cases your input streams have great many field name patterns, norikra returns long list of field names. That is not understandable. In these cases, you should specify `auto_field false`.
