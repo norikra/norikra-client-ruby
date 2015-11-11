@@ -121,6 +121,44 @@ class Norikra::Client
         client(parent_options).resume(query_name)
       end
     end
+
+    desc "dump", "dump queries as JSON"
+    def dump
+
+      require 'json'
+
+      wrap do
+        queries = client(parent_options).queries
+        puts JSON.pretty_generate(queries)
+      end
+    end
+
+    desc "sync", "sync queries from stdin(dump JSON)"
+    option :dry_run, :type => :boolean, :default => false, :desc => "dry run", :aliases => "-n"
+    def sync
+
+      require 'json'
+
+      wrap do
+        load_queries = JSON.load($stdin)
+        server_queries = client(parent_options).queries
+        prefix = options[:dry_run] ? "[dry-run] " : ""
+
+        (server_queries - load_queries).each do |q|
+          puts "#{prefix}remove query #{q}"
+          unless options[:dry_run]
+            client(parent_options).deregister(q['name'])
+          end
+        end
+
+        (load_queries - server_queries).each do |q|
+          puts "#{prefix}add query #{q}"
+          unless options[:dry_run]
+            client(parent_options).register(q['name'], q['group'], q['expression'])
+          end
+        end
+      end
+    end
   end
 
   class Field < Thor
